@@ -28,7 +28,8 @@ class Appy
   def initialize(root: nil, &blk)
     if root.nil?
       caller_location = caller_locations(1, 1).first
-      root = File.expand_path(caller_location.path)
+      app_path = File.expand_path(caller_location.path)
+      root = File.dirname(app_path)
     end
 
     @root = Pathname(root)
