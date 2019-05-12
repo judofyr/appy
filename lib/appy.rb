@@ -1,4 +1,5 @@
 require 'pathname'
+require 'cri'
 
 class Appy
   module Helpers
@@ -25,7 +26,7 @@ class Appy
 
   attr_reader :root, :config
 
-  def initialize(root: nil, &blk)
+  def initialize(root: nil, name: nil, &blk)
     if root.nil?
       caller_location = caller_locations(1, 1).first
       app_path = File.expand_path(caller_location.path)
@@ -33,7 +34,7 @@ class Appy
     end
 
     @root = Pathname(root)
-    @commands = []
+    @name = name || @root.basename.to_s
 
     setup_load_path
     instance_eval(&blk) if blk
@@ -52,30 +53,30 @@ class Appy
     end
   end
 
-  def cmd(name, &blk)
-    name = name.to_s
-    blk = Helpers.no_recurse(blk, name: name)
-    @commands << Command.new(name)
-    define_singleton_method(name, &blk)
+  def cmd(&blk)
+    cri_command.define_command(&blk)
+    nil
+  end
+
+  def cri_command
+    @cri_command ||= Cri::Command.define do |c|
+      c.name @name
+      c.summary "application commands"
+
+      c.flag :h, :help, 'show help for this command' do |value, cmd|
+        puts cmd.help
+        exit 0
+      end
+
+      c.run do |opts, args, cmd|
+        puts cmd.help
+        exit 0
+      end
+    end
   end
 
   def cli!(argv = ARGV)
-    if argv.empty?
-      @commands.each do |cmd|
-        puts "- #{cmd.name}"
-      end
-
-      return
-    end
-
-    cmd_name = argv[0]
-    cmd = @commands.detect { |cmd| cmd.name == cmd_name }
-    if !cmd
-      puts "no such command: #{cmd_name}"
-      exit 1
-    end
-
-    send(cmd.name)
+    cri_command.run(argv)
   end
 
   private
