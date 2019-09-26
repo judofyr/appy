@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
 
   s.require_paths = %w(lib)
   s.files         = Dir["lib/**/*.rb"] + Dir["*.md"]
-  s.license       = '0BSD'
+  s.license       = 'BlueOak-1.0.0'
 
   s.add_dependency 'cri', '~> 2.15.0'
 end
