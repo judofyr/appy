@@ -1,5 +1,6 @@
 require 'pathname'
 require 'cri'
+require 'zeitwerk'
 
 class Appy
   module Helpers
@@ -36,8 +37,9 @@ class Appy
     @root = Pathname(root)
     @name = name || @root.basename.to_s
 
-    setup_load_path
+    _setup_load_path
     instance_eval(&blk) if blk
+    loader.setup
   end
 
   def has(name, &blk)
@@ -79,9 +81,17 @@ class Appy
     cri_command.run(argv)
   end
 
+  def loader
+    @loader ||= begin
+      loader = Zeitwerk::Loader.new
+      loader.push_dir((root + 'app').to_s)
+      loader
+    end
+  end
+
   private
 
-  def setup_load_path
+  def _setup_load_path
     $LOAD_PATH << (@root + 'lib').to_s
   end
 end

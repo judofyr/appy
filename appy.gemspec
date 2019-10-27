@@ -16,5 +16,6 @@ Gem::Specification.new do |s|
   s.license       = 'BlueOak-1.0.0'
 
   s.add_dependency 'cri', '~> 2.15.0'
+  s.add_dependency 'zeitwerk', '~> 2.2'
 end
 
