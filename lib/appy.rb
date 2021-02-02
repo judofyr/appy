@@ -1,6 +1,7 @@
 require 'pathname'
 require 'cri'
 require 'zeitwerk'
+require 'monitor'
 
 class Appy
   module Helpers
@@ -36,6 +37,7 @@ class Appy
 
     @root = Pathname(root)
     @name = name || @root.basename.to_s
+    @monitor = Monitor.new
 
     _setup_load_path
     instance_eval(&blk) if blk
@@ -48,8 +50,12 @@ class Appy
     blk = Helpers.no_recurse(blk, name: name)
     define_singleton_method(name) do
       if !is_defined
-        value = instance_eval(&blk)
-        is_defined = true
+        @monitor.synchronize do
+          if !is_defined
+            value = instance_eval(&blk)
+            is_defined = true
+          end
+        end
       end
       value
     end
