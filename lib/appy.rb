@@ -24,9 +24,7 @@ class Appy
     end
   end
 
-  Command = Struct.new(:name)
-
-  attr_reader :root, :config
+  attr_reader :root
 
   def initialize(root: nil, name: nil, &blk)
     if root.nil?
